@@ -1,6 +1,6 @@
 # Krypton.Carevo.JMR.MCP
 
-An MCP (Model Context Protocol) server implementation for job listing and management services with MongoDB integration and async FastAPI backend.
+An MCP (Model Context Protocol) server implementation for job listing and management services with MongoDB integration and streamable HTTP service.
 
 ## Project Overview
 
