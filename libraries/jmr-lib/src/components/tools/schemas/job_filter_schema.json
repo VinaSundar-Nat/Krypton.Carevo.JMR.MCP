@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "description": "Criteria to filter job listings",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "Filter by job ID"
+    },
+    "company": {
+      "type": "string",
+      "description": "Filter by company name"
+    },
+    "location": {
+      "type": "string",
+      "description": "Filter by job location"
+    },
+    "job_type": {
+      "type": "string",
+      "enum": ["Full Time", "Part Time", "Contract", "Intern", "Temporary"],
+      "description": "Filter by job type"
+    },
+    "connection_type": {
+      "type": "string",
+      "enum": ["Onsite", "Remote", "Hybrid"],
+      "description": "Filter by connection type"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Filter by required skills"
+    },
+    "posted_from": {
+      "type": "string",
+      "description": "Filter jobs posted from this date (ISO format)"
+    },
+    "posted_to": {
+      "type": "string",
+      "description": "Filter jobs posted until this date (ISO format)"
+    },
+    "operator": {
+      "type": "string",
+      "enum": ["AND", "OR"],
+      "default": "AND",
+      "description": "Logical operator to combine filter conditions"
+    }
+  },
+  "additionalProperties": false
+}

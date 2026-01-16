@@ -1,0 +1,59 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  detailed:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
+
+filters:
+  info_filter:
+    (): utility.logfilter.InfoFilter
+  error_filter:
+    (): utility.logfilter.ErrorFilter
+  warning_filter:
+    (): utility.logfilter.WarningFilter
+handlers:
+  error_file_handler:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: ERROR
+    formatter: detailed
+    filename: './log/kr_ai_core_error.log'  # Log file name
+    when: 'midnight'                  
+    interval: 1                # Interval for rotation
+    backupCount: 5             # Keep the last 5 log files
+    filters: [error_filter]
+         
+  info_file_handler:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: detailed
+    filename: './log/kr_ai_core_info.log'  # Log file name
+    when: 'midnight'                  
+    interval: 1                # Interval for rotation
+    backupCount: 5             # Keep the last 5 log files
+    filters: [info_filter]
+
+  warning_file_handler:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: WARNING
+    formatter: detailed
+    filename: './log/kr_ai_core_warning.log'  # Log file name
+    when: 'midnight'
+    interval: 1                # Interval for rotation
+    backupCount: 5             # Keep the last 5 log files
+    filters: [warning_filter]
+
+  console:
+    class: logging.StreamHandler
+    formatter: simple
+    stream: ext://sys.stdout
+
+loggers:
+  core_logger:
+    level: DEBUG
+    handlers: [error_file_handler,info_file_handler,warning_file_handler,console]
+    propagate: no
+
+root:
+  level: DEBUG
+  handlers: [console]

@@ -1,0 +1,25 @@
+[project]
+name = "jmr-svc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dspy>=3.0.2",
+    "mcp>=1.16.0",
+    "jmr-lib",
+    "uvicorn[standard]>=0.22.0",
+    "pyyaml>=6.0",
+    "pymongo>=4.16.0",
+    "boto3>=1.42.27",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+jmr-lib = { path = "../../libraries/jmr-lib", editable = true }
