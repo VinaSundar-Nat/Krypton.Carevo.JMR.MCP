@@ -10,7 +10,7 @@ This project implements a modern MCP server with comprehensive tooling for job l
 - **Job View Tracking**: Track and analyze job listing views
 - **MongoDB Integration**: Async database operations using Beanie ODM
 - **MCP Tools**: Standardized tool definitions for AI model integration
-- **REST API**: FastAPI-based HTTP transport layer
+- **REST API**: Starlette- HTTP transport layer
 
 ## Architecture
 
