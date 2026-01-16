@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "Data for creating or updating a job view",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "The ID of the job listing"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "The ID of the user viewing the job"
+    }
+  },
+  "required": ["job_id", "user_id"],
+  "additionalProperties": false
+}

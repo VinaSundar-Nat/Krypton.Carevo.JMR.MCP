@@ -1,0 +1,83 @@
+FROM python:3.12-slim AS uv-installer
+
+# Install uv package manager
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+FROM python:3.12-slim AS builder
+
+# Copy uv from installer stage
+COPY --from=uv-installer /uv /uvx /bin/
+
+# Set working directory
+WORKDIR /build
+
+# Copy project files for both core-lib and core-app
+# Copy core-lib first (dependency)
+COPY libraries/jmr-lib/pyproject.toml jmr-lib/README.md ./jmr-lib/
+COPY libraries/jmr-lib/src ./jmr-lib/src/
+
+# Copy core-app
+COPY servers/jmr-svc/pyproject.toml jmr-svc/README.md ./jmr-svc/
+COPY servers/jmr-svc/requirements.txt ./jmr-svc/
+COPY servers/jmr-svc/src ./jmr-svc/src/
+
+# Build jmr-lib first
+WORKDIR /build/jmr-lib
+RUN uv sync --frozen
+RUN uv build
+
+# Build jmr-svc (which depends on jmr-lib)
+WORKDIR /build/jmr-svc
+RUN uv sync --frozen
+RUN uv build
+
+# Create a clean virtual environment with all dependencies installed
+WORKDIR /build
+RUN uv venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install built packages into the virtual environment
+RUN uv pip install --no-cache /build/jmr-lib/dist/*.whl
+RUN uv pip install --no-cache /build/jmr-svc/dist/*.whl
+
+# ============================================================================
+#  App Runtime
+# ============================================================================
+FROM python:3.12-slim AS runtime
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ENV=production \
+    PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user for security
+RUN groupadd -r mcpuser && useradd -r -g mcpuser mcpuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy application source code
+COPY --from=builder /build/jmr-lib/src /app/jmr-lib/src
+COPY --from=builder /build/jmr-svc/src /app/jmr-svc/src
+
+# Change ownership to non-root user
+RUN chown -R mcpuser:mcpuser /app
+
+USER mcpuser
+
+EXPOSE 8443
+
+# Set working directory to jmr-svc for proper imports
+WORKDIR /app/jmr-svc/src
+
+# Health check - checks /app/health endpoint every 60 seconds
+HEALTHCHECK --interval=60s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8443/app/health').read()" || exit 1
+
+# Run the application
+CMD ["python", "main.py"]

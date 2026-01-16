@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "description": "Data for creating a new job listing",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "Unique identifier for the job listing"
+    },
+    "title": {
+      "type": "string",
+      "description": "Job title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed job description"
+    },
+    "company": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "location": {
+      "type": "string",
+      "description": "Job location"
+    },
+    "job_type": {
+      "type": "string",
+      "enum": ["Full Time", "Part Time", "Contract", "Intern", "Temporary"],
+      "description": "Type of employment"
+    },
+    "connection_type": {
+      "type": "string",
+      "enum": ["Onsite", "Remote", "Hybrid"],
+      "description": "Work arrangement type"
+    },
+    "salary_range": {
+      "type": "object",
+      "description": "Salary range information",
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "Minimum salary"
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum salary"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code (e.g., USD, EUR)"
+        }
+      }
+    },
+    "posted_date": {
+      "type": "string",
+      "description": "Date when job was posted (ISO format)"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required skills for the job"
+    },
+    "source": {
+      "type": "string",
+      "description": "Source of the job listing"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Creation timestamp (ISO format)"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Last update timestamp (ISO format)"
+    }
+  },
+  "required": [
+    "job_id",
+    "title",
+    "description",
+    "company",
+    "location",
+    "job_type",
+    "connection_type",
+    "salary_range",
+    "posted_date",
+    "skills",
+    "source",
+    "created_at",
+    "updated_at"
+  ],
+  "additionalProperties": false
+}

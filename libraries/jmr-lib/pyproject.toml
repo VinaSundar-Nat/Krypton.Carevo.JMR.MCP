@@ -1,0 +1,26 @@
+[project]
+name = "jmr-lib"
+version = "0.1.0"
+description = "Carevo JMR Library - tools , resources and prompts"
+readme = "README.md"
+authors = [
+    { name = "VinaSundar-Nat", email = "vina.sundar@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=1.16.0",
+    "pyyaml>=6.0",
+    "dspy>=3.0.2",
+    "pymongo>=4.16.0",
+    "beanie>=2.0.1",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]

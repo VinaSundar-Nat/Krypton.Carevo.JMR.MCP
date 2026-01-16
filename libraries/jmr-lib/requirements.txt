@@ -1,0 +1,5 @@
+PyYAML>=6.0
+mcp>=1.16.0
+dspy>=3.0.2
+pymongo>=4.16.0
+beanie>=2.0.1
