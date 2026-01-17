@@ -185,7 +185,7 @@ Thumbs.db
 *.log
 log/
 
-copilot-instructions.md
+copilot-instructions.*
 
 # Database files
 
