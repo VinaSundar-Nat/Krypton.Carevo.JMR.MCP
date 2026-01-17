@@ -1,35 +1,40 @@
 FROM python:3.12-slim AS uv-installer
 
 # Install uv package manager
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
 FROM python:3.12-slim AS builder
 
 # Copy uv from installer stage
-COPY --from=uv-installer /uv /uvx /bin/
+COPY --from=uv-installer /bin/uv /bin/
 
 # Set working directory for build
 WORKDIR /build
 
 # Copy project files for both core-lib and core-app
 # Copy core-lib first (dependency)
-COPY libraries/jmr-lib/pyproject.toml jmr-lib/README.md ./jmr-lib/
+COPY libraries/jmr-lib/pyproject.toml libraries/jmr-lib/README.md ./jmr-lib/
+COPY libraries/jmr-lib/requirements.txt ./jmr-lib/
 COPY libraries/jmr-lib/src ./jmr-lib/src/
 
 # Copy core-app
-COPY servers/jmr-svc/pyproject.toml jmr-svc/README.md ./jmr-svc/
+COPY servers/jmr-svc/pyproject.toml servers/jmr-svc/README.md ./jmr-svc/
 COPY servers/jmr-svc/requirements.txt ./jmr-svc/
 COPY servers/jmr-svc/src ./jmr-svc/src/
 
 # Build jmr-lib first
 WORKDIR /build/jmr-lib
-RUN uv sync --frozen
-RUN uv build
+RUN uv venv
+RUN uv pip install -r requirements.txt
+RUN uv pip install build
+RUN .venv/bin/python -m build
 
 # Build jmr-svc (which depends on jmr-lib)
 WORKDIR /build/jmr-svc
-RUN uv sync --frozen
-RUN uv build
+RUN uv venv
+RUN uv pip install -r requirements.txt
+RUN uv pip install build
+RUN .venv/bin/python -m build
 
 # Create a clean virtual environment with all dependencies installed
 WORKDIR /build
@@ -64,6 +69,7 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy application source code
 COPY --from=builder /build/jmr-lib/src /app/jmr-lib/src
 COPY --from=builder /build/jmr-svc/src /app/jmr-svc/src
+RUN mkdir -p /app/jmr-svc/src/log
 
 # Change ownership to non-root user
 RUN chown -R mcpuser:mcpuser /app
