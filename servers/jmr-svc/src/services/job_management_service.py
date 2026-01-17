@@ -1,3 +1,4 @@
+from helpers.resource_register import ResourceRegister
 from utility import logprovider
 from pymongo import MongoClient
 from mcp.server.fastmcp import FastMCP
@@ -7,6 +8,7 @@ from helpers.tools_register import ToolRegister
 import uuid
 from managers.mongo_context import app_lifespan
 from components.tools.job_listing import JobListingTool
+from components.resources.job_listing import JobListingResource     
 
 
 logger = logprovider.get_logger()
@@ -19,7 +21,9 @@ job_listing_mcp = FastMCP(name="JMRService",
 def setup_joblisting_server(jmrsvc: FastMCP, correlation_id: Optional[str] = uuid.uuid4()):
     """Register all DB tools with the manager."""
 
-    joblisting_tool_handler = JobListingTool(str(correlation_id))
+    # joblisting_tool_handler = JobListingTool(str(correlation_id))
     tool_manager = ToolRegister(jmrsvc)
-    tool_manager.register_handler("job_listing", joblisting_tool_handler)
+    tool_manager.register_handler("job_listing", JobListingTool(str(correlation_id)))
+    resource_manager = ResourceRegister(jmrsvc)
+    resource_manager.register_handler("job_listing", JobListingResource(str(correlation_id)))
     logger.info("JMR Database tools and resources registered successfully")
