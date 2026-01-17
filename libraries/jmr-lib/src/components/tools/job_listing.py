@@ -113,7 +113,7 @@ class JobListingTool(BaseToolHandler):
         """Fetch school details by name."""
         try:
              # Access the async driver from the lifespan context
-            client: AsyncMongoClient = ctx.request_context.lifespan_context.client 
+            # client: AsyncMongoClient = ctx.request_context.lifespan_context.client 
 
             query = JobFilterHelpers().build_filter_query(filter)
             logger.info(f"Fetching job listings with filter: {filter} - correlation_id: {self.correlation_id}")
@@ -131,7 +131,7 @@ class JobListingTool(BaseToolHandler):
         """Create a new job listing in the database."""
         try:
             # Access the async driver from the lifespan context
-            client: AsyncMongoClient = ctx.request_context.lifespan_context.client
+            # client: AsyncMongoClient = ctx.request_context.lifespan_context.client
             
             if not job:
                 raise ValueError("Job data is required to create a job listing")
@@ -152,7 +152,7 @@ class JobListingTool(BaseToolHandler):
     async def get_job_views(self, job_id: str, ctx: Context[ServerSession, DbContext]) -> List[View]:
         """Dedicated method to fetch views for a specific job."""
         try:
-            client: AsyncMongoClient = ctx.request_context.lifespan_context.client
+            # client: AsyncMongoClient = ctx.request_context.lifespan_context.client
             
             logger.info(f"Fetching views for job ID: {job_id} - correlation_id: {self.correlation_id}")
             
@@ -172,7 +172,7 @@ class JobListingTool(BaseToolHandler):
     async def create_job_view(self, job_id: str, user_id: str, ctx: Context[ServerSession, DbContext]) -> Dict[str, Any]:
         """Create or update a view for a job listing."""
         try:
-            client: AsyncMongoClient = ctx.request_context.lifespan_context.client
+            # client: AsyncMongoClient = ctx.request_context.lifespan_context.client
             
             if not job_id or not user_id:
                 raise ValueError("job_id and user_id are required")
