@@ -8,9 +8,10 @@ This project implements a modern MCP server with comprehensive tooling for job l
 
 - **Job Listing Management**: Create, retrieve, and filter job listings
 - **Job View Tracking**: Track and analyze job listing views
-- **MongoDB Integration**: Async database operations using Beanie ODM
+- **MCP Resources**: URI-based read-only access to job listings and view data
 - **MCP Tools**: Standardized tool definitions for AI model integration
-- **REST API**: Starlette- HTTP transport layer
+- **MongoDB Integration**: Async database operations using Beanie ODM
+- **REST API**: Starlette-based HTTP transport layer
 
 ## Architecture
 
@@ -22,13 +23,15 @@ Krypton.Carevo.JMR.MCP/
 │   └── jmr-lib/
 │       ├── src/
 │       │   ├── components/
+│       │   │   ├── resources/
+│       │   │   │   └── job_listing.py     # Job listing resources
 │       │   │   └── tools/
 │       │   │       ├── job_listing.py      # Job listing tools
 │       │   │       └── schemas/            # JSON schema definitions
 │       │   ├── models/
 │       │   │   ├── domain/jobs/           # Job domain models
 │       │   │   ├── context/               # Database context
-│       │   │   └── handler/               # Tool handler base
+│       │   │   └── handler/               # Tool & resource handler base
 │       │   └── utility/                    # Logging and config
 │       ├── pyproject.toml
 │       └── requirements.txt
@@ -49,7 +52,50 @@ Krypton.Carevo.JMR.MCP/
 
 ## Key Features
 
-### 1. MCP Tools
+### 1. MCP Resources
+
+Resources provide direct access to job listing data through URI-based endpoints. These are read-only endpoints that expose job data in JSON format.
+
+#### jobs://today
+Access only active job listings (non-closed positions posted today).
+
+**URI:** `jobs://today`  
+**MIME Type:** `application/json`  
+**Description:** Returns all active job listings that were posted on or after the current date.
+
+**Response:** Array of Job objects (views array excluded for privacy)
+
+#### jobs://details/{job_id}
+Access detailed information for a specific job listing by ID.
+
+**URI:** `jobs://details/{job_id}`  
+**MIME Type:** `application/json`  
+**Description:** Fetches comprehensive details for a single job listing, including view count.
+
+**Parameters:**
+- `job_id`: The unique identifier for the job listing
+
+**Response:** Single Job object with `view_count` field (views array excluded for privacy)
+
+#### jobs://views/{job_id}
+Get view count for a specific job listing by ID.
+
+**URI:** `jobs://views/{job_id}`  
+**MIME Type:** `application/json`  
+**Description:** Retrieves the total number of views for a specific job listing.
+
+**Parameters:**
+- `job_id`: The unique identifier for the job listing
+
+**Response:**
+```json
+{
+  "job_id": "job_123456",
+  "view_count": 5
+}
+```
+
+### 2. MCP Tools
 
 #### fetch_job_listings
 Fetch job listings with advanced filtering capabilities.
@@ -203,7 +249,7 @@ db.job.updateOne(
 
 ### MCP Client Testing with Postman
 
-Test MCP tools using the Postman client:
+Test MCP tools and resources using the Postman client:
 
 ![Postman MCP client](docs/client_pm.png)
 
@@ -219,7 +265,51 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-**3. Test Cases:**
+**3. Resource Test Cases:**
+
+#### Test Case R1: Access Today's Active Jobs
+```json
+{
+  "method": "resources/read",
+  "params": {
+    "uri": "jobs://today"
+  }
+}
+```
+
+**Expected Response:** Array of active job listings posted today (views excluded)
+
+#### Test Case R2: Get Job Details by ID
+```json
+{
+  "method": "resources/read",
+  "params": {
+    "uri": "jobs://details/job_123456"
+  }
+}
+```
+
+**Expected Response:** Single job object with view_count field
+
+#### Test Case R3: Get Job View Count
+```json
+{
+  "method": "resources/read",
+  "params": {
+    "uri": "jobs://views/job_123456"
+  }
+}
+```
+
+**Expected Response:**
+```json
+{
+  "job_id": "job_123456",
+  "view_count": 5
+}
+```
+
+**4. Tool Test Cases:**
 
 #### Test Case 1: Fetch All Job Listings
 ```json
@@ -476,6 +566,14 @@ Tools are registered via `ToolRegister` helper:
 3. Schema loader converts JSON schema to Python type annotations
 4. FastMCP registers tools with proper signatures
 
+### Resource Registration
+
+Resources are registered via `ResourceRegister` helper:
+1. Handler implements `BaseResourceHandler`
+2. Defines resources in `@property resources` with URI patterns
+3. Implements `read_resource(uri)` method for handling URI-based reads
+4. FastMCP registers resources with proper URI routing
+
 ## Privacy & Security
 
 - **View Privacy**: User view data is stored in database but excluded from API responses
@@ -483,6 +581,15 @@ Tools are registered via `ToolRegister` helper:
 - **Database Exclusion**: Views marked with `Field(default=[])` for storage, excluded in responses with `model_dump(exclude={'views'})`
 
 ## Recent Updates
+
+### MCP Resources Implementation
+- Added three URI-based resources for read-only job access:
+  - `jobs://today`: Active job listings posted today
+  - `jobs://details/{job_id}`: Detailed job information by ID
+  - `jobs://views/{job_id}`: View count for specific job
+- Resources provide JSON-formatted data with privacy protection (views excluded)
+- Implemented `BaseResourceHandler` for resource handling architecture
+- Resource registration system integrated with FastMCP
 
 ### Schema Externalization
 - Job filter schema: `components/tools/schemas/job_filter_schema.json`
@@ -507,17 +614,6 @@ If breakpoints aren't hitting:
 2. Ensure `justMyCode: false` is set
 3. Check PYTHONPATH includes both library and service directories
 4. Restart the Python interpreter
-
-### Common Issues
-
-**MongoDB "unique" error on _id**
-- Solution: Remove `unique=True` from id field (MongoDB _id is inherently unique)
-
-**Async context manager not awaited**
-- Solution: Use `await client.close()` instead of `client.close()`
-
-**Views not persisting**
-- Solution: Removed `exclude=True` from views field to enable database persistence
 
 ## License
 
