@@ -67,8 +67,10 @@ class JobListingResource(BaseResourceHandler):
         try:
             logger.info(f"Fetching active job listings - correlation_id: {self.correlation_id}")
             
-            # Get active jobs (wheJob.is_active == True
-            jobs = await Job.find(GTE(Job.posted_date, datetime.now(timezone.utc).date())).to_list()
+            # Get active jobs posted today (compare date only, not time)
+            # Since posted_date is a string, we compare with date string format
+            today_date_str = datetime.now(timezone.utc).date().isoformat()
+            jobs = await Job.find(GTE(Job.posted_date, today_date_str)).to_list()
             
             # Convert to dictionaries, exclude views for privacy
             jobs_data = [job.model_dump(exclude={'views'}) for job in jobs]
