@@ -49,7 +49,23 @@ env_configs = {
         'MONGO_DB': 'jmr',
         'API_ENDPOINT': 'localhost',
         'MCP_TRANSPORT': 'streamable-http',
-        'ORIGINS': ['*']
+        'ORIGINS': ['*'],
+        'HTTPX_SETTINGS': {
+            'max_connections': 50,
+            'max_keepalive_connections': 10,
+            'keepalive_expiry': 5.0,
+            'http2': False,
+            'timeout': 30.0,
+            'connect_timeout': 10.0,
+            'follow_redirects': True,
+            'verify': False
+        },
+        "UMR_SERVICE": {
+            "URL": "http://localhost:5138" ,
+            "MAX_RETRIES": 3,
+            "RETRY_BACKOFF_FACTOR": 0.5,
+            "STATUS_FORCELIST": [500, 502, 503, 504]
+        }
     },
     'development': {
         'MONGO_URI': 'dev-db.example.com:27017',
@@ -58,7 +74,17 @@ env_configs = {
         'MONGO_DB': 'jmr',
         'API_ENDPOINT': 'http://localhost:8000',
         'MCP_TRANSPORT': 'streamable-http',
-        'ORIGINS': ['http://localhost:3000', 'http://localhost:8000']
+        'ORIGINS': ['http://localhost:3000', 'http://localhost:8000'],
+        'HTTPX_SETTINGS': {
+            'max_connections': 50,
+            'max_keepalive_connections': 10,
+            'keepalive_expiry': 5.0,
+            'http2': False,
+            'timeout': 30.0,
+            'connect_timeout': 10.0,
+            'follow_redirects': True,
+            'verify': False
+        }   
     },
     'production': {
         'MONGO_URI': 'prod-db.example.com:27017',
@@ -67,7 +93,17 @@ env_configs = {
         'MONGO_DB': 'jmr',
         'API_ENDPOINT': 'https://api.mcpdomain.com',
         'MCP_TRANSPORT': 'https',
-        'ORIGINS': ['https://app.domain.com', 'https://api.mcpdomain.com']
+        'ORIGINS': ['https://app.domain.com', 'https://api.mcpdomain.com'],
+        'HTTPX_SETTINGS': {
+            'max_connections': 100,
+            'max_keepalive_connections': 20,
+            'keepalive_expiry': 10.0,
+            'http2': True,
+            'timeout': 60.0,
+            'connect_timeout': 15.0,
+            'follow_redirects': True,
+            'verify': True
+        }  
     }
 }
 
