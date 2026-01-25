@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Schema for updating user application status and details",
+  "properties": {
+    "applicationId": {
+      "type": "integer",
+      "description": "Unique identifier for the application to update"
+    },
+    "userId": {
+      "type": "integer",
+      "description": "User ID who owns the application"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Applied", "Under Review", "Interview Scheduled", "Shortlisted", "Rejected", "Accepted", "Withdrawn"],
+      "description": "Updated application status"
+    },
+    "statusChangedDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the status was changed (ISO 8601 format, e.g., 2026-01-23T10:30:00Z)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or comments about the status update (e.g., interview stage, feedback)"
+    }
+  },
+  "required": ["applicationId", "userId", "status", "statusChangedDate"],
+  "additionalProperties": false
+}

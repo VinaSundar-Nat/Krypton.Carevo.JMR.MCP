@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "description": "Schema for creating  applications for user",
+  "properties": {
+    "userId": {
+      "type": "integer",
+      "description": "user ID"
+    },
+    "jobId": {
+      "type": "string",
+      "description": "job ID (e.g., JOB-2026-002)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Applied", "Under Review", "Interview Scheduled", "Rejected", "Accepted", "Withdrawn"],
+      "description": "Application status"
+    },
+    "appliedDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when the application was submitted (ISO 8601 format)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or comments about the application"
+    }
+  },
+  "required": ["userId", "jobId", "status", "appliedDate"],
+  "additionalProperties": false
+}

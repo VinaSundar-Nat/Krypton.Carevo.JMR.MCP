@@ -22,4 +22,5 @@ def load_schema(schema_name: str) -> Dict[str, Any]:
 JOB_FILTER_SCHEMA = load_schema("job_filter_schema")
 JOB_SCHEMA = load_schema("job_schema")
 JOB_VIEW_SCHEMA = load_schema("job_view_schema")
-APPLICATION_FILTER_SCHEMA = load_schema("application_filter_schema")
+APPLICATION_CREATE_SCHEMA = load_schema("application_create_schema")
+APPLICATION_UPDATE_SCHEMA = load_schema("application_update_schema")
