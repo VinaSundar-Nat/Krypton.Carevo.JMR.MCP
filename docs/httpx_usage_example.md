@@ -12,7 +12,7 @@ The HTTPX context manager implementation provides connection pooling and resourc
 - **keepalive_expiry**: 5 seconds before idle connections are closed
 
 ### 2. Performance Optimizations
-- **HTTP/2 Support**: Enabled by default for multiplexing
+- **HTTP/2 Support**: Disabled
 - **Connection Reuse**: Reduces overhead of creating new connections
 - **Timeout Configuration**: 30s total timeout, 10s connect timeout
 
