@@ -1,8 +1,8 @@
 # from ast import And
 from utility import logprovider
-from mcp.types import Resource, TextContent
+from mcp.types import Resource, ResourceTemplate, TextContent
 from models.handler.base_resource_handler import BaseResourceHandler
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional, Union
 import uuid
 import json
 from mcp.server.fastmcp import Context
@@ -23,27 +23,40 @@ class JobListingResource(BaseResourceHandler):
         self.correlation_id = correlation_id or str(uuid.uuid4())
 
     @property
-    def resources(self) -> List[Resource]:
+    def direct_resources(self) -> List[Resource]:
+        """Direct resources with static URIs."""
         return [
             Resource(
                 uri="jobs://today",
                 name="Active Job Listings",
                 description="Access only active job listings (non-closed positions).",
                 mimeType="application/json"
-            ),
-            Resource(
-                uri="jobs://details/{job_id}",
+            )
+        ]
+    
+    @property
+    def resource_templates(self) -> List[ResourceTemplate]:
+        """Resource templates with dynamic URI parameters."""
+        return [
+            ResourceTemplate(
+                uriTemplate="jobs://details/{job_id}",
                 name="Job Listing Details",
                 description="Access detailed information for a specific job listing by ID.",
                 mimeType="application/json"
             ),
-            Resource(
-                uri="jobs://views/{job_id}",
+            ResourceTemplate(
+                uriTemplate="jobs://views/{job_id}",
                 name="Listed Job view count",
                 description="get view count for a specific job listing by ID.",
                 mimeType="application/json"
             )
         ]
+    
+    @property
+    def resources(self) -> List[Union[Resource, ResourceTemplate]]:
+        """Combined list of all resources (direct and templates)."""
+        combined = self.direct_resources + self.resource_templates
+        return combined
 
     async def read_resource(self, uri: str) -> str:
         """Read resource content by URI."""

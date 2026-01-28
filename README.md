@@ -1,3 +1,4 @@
+
 # Krypton.Carevo.JMR.MCP
 
 An MCP (Model Context Protocol) server implementation for job listing and management services with MongoDB integration and streamable HTTP service.
@@ -52,48 +53,29 @@ Krypton.Carevo.JMR.MCP/
 
 ## Key Features
 
-### 1. MCP Resources
+### 1. MCP Resources & Resource Templates
 
-Resources provide direct access to job listing data through URI-based endpoints. These are read-only endpoints that expose job data in JSON format.
+Resources provide direct access to job listing data through URI-based endpoints. These are read-only endpoints that expose job data in JSON format. The project now follows the MCP specification for distinguishing between direct resources and resource templates:
 
-#### jobs://today
-Access only active job listings (non-closed positions posted today).
+- **Direct Resources** use the `uri` property for static endpoints (e.g., `jobs://today`).
+- **Resource Templates** use the `uriTemplate` property for dynamic endpoints with parameters (e.g., `jobs://details/{job_id}` and `jobs://views/{job_id}`).
 
+#### jobs://today (Direct Resource)
 **URI:** `jobs://today`  
 **MIME Type:** `application/json`  
 **Description:** Returns all active job listings that were posted on or after the current date.
 
-**Response:** Array of Job objects (views array excluded for privacy)
-
-#### jobs://details/{job_id}
-Access detailed information for a specific job listing by ID.
-
-**URI:** `jobs://details/{job_id}`  
+#### jobs://details/{job_id} (Resource Template)
+**URI Template:** `jobs://details/{job_id}`  
 **MIME Type:** `application/json`  
 **Description:** Fetches comprehensive details for a single job listing, including view count.
 
-**Parameters:**
-- `job_id`: The unique identifier for the job listing
-
-**Response:** Single Job object with `view_count` field (views array excluded for privacy)
-
-#### jobs://views/{job_id}
-Get view count for a specific job listing by ID.
-
-**URI:** `jobs://views/{job_id}`  
+#### jobs://views/{job_id} (Resource Template)
+**URI Template:** `jobs://views/{job_id}`  
 **MIME Type:** `application/json`  
 **Description:** Retrieves the total number of views for a specific job listing.
 
-**Parameters:**
-- `job_id`: The unique identifier for the job listing
-
-**Response:**
-```json
-{
-  "job_id": "job_123456",
-  "view_count": 5
-}
-```
+**Note:** Resource templates are now discoverable and registered using the `uriTemplate` property, following the Model Context Protocol (MCP) best practices. See `job_listing.py` and `resource_register.py` for implementation details.
 
 ### 2. MCP Tools
 
@@ -247,260 +229,6 @@ db.job.updateOne(
 )
 ```
 
-### MCP Client Testing with Postman
-
-Test MCP tools and resources using the Postman client:
-
-![Postman MCP client](docs/client_pm.png)
-
-#### Postman Setup for MCP Testing
-
-**1. Create a New Request:**
-- Method: `POST`
-- URL: `http://127.0.0.1:8445/job-listing/sse` (or appropriate endpoint)
-
-**2. Set Headers:**
-```
-Content-Type: application/json
-Accept: application/json
-```
-
-**3. Resource Test Cases:**
-
-#### Test Case R1: Access Today's Active Jobs
-```json
-{
-  "method": "resources/read",
-  "params": {
-    "uri": "jobs://today"
-  }
-}
-```
-
-**Expected Response:** Array of active job listings posted today (views excluded)
-
-#### Test Case R2: Get Job Details by ID
-```json
-{
-  "method": "resources/read",
-  "params": {
-    "uri": "jobs://details/job_123456"
-  }
-}
-```
-
-**Expected Response:** Single job object with view_count field
-
-#### Test Case R3: Get Job View Count
-```json
-{
-  "method": "resources/read",
-  "params": {
-    "uri": "jobs://views/job_123456"
-  }
-}
-```
-
-**Expected Response:**
-```json
-{
-  "job_id": "job_123456",
-  "view_count": 5
-}
-```
-
-**4. Tool Test Cases:**
-
-#### Test Case 1: Fetch All Job Listings
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "fetch_job_listings",
-    "arguments": {
-      "filter": {}
-    }
-  }
-}
-```
-
-#### Test Case 2: Fetch with Filters
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "fetch_job_listings",
-    "arguments": {
-      "filter": {
-        "company": "Tech Innovations Inc",
-        "location": "Remote",
-        "job_type": "Full Time",
-        "skills": ["Python", "FastAPI"],
-        "operator": "AND"
-      }
-    }
-  }
-}
-```
-
-#### Test Case 3: Create a New Job Listing
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "create_job_listing",
-    "arguments": {
-      "job": {
-        "job_id": "job_123456",
-        "title": "Senior Full Stack Developer",
-        "description": "We are seeking an experienced Full Stack Developer...",
-        "company": "Tech Innovations Inc",
-        "location": "San Francisco, CA",
-        "job_type": "Full Time",
-        "connection_type": "Hybrid",
-        "salary_range": {
-          "min": 120000,
-          "max": 180000,
-          "currency": "USD"
-        },
-        "posted_date": "2026-01-15T10:00:00Z",
-        "skills": ["Python", "FastAPI", "React", "MongoDB"],
-        "source": "company_website",
-        "created_at": "2026-01-15T10:00:00Z",
-        "updated_at": "2026-01-15T10:00:00Z"
-      }
-    }
-  }
-}
-```
-
-#### Test Case 4: Create or Update a Job View
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "create_job_view",
-    "arguments": {
-      "job_id": "job_123456",
-      "user_id": "user_789"
-    }
-  }
-}
-```
-
-#### Test Case 5: Get Job Views and Count
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "get_job_views",
-    "arguments": {
-      "jobid": "job_123456"
-    }
-  }
-}
-```
-
-#### Postman Testing Workflow
-
-**Step 1: Create a Job**
-- Use Test Case 3 to create a job listing
-- Verify response includes the created job with ID
-
-**Step 2: Verify in MongoDB**
-- Open mongosh and run: `db.job.findOne({ job_id: "job_123456" })`
-- Confirm all fields are saved correctly
-- Check that views array is empty: `[]`
-
-**Step 3: Create Multiple Views**
-- Run Test Case 4 multiple times with different user_ids
-- Example: `user_789`, `user_790`, `user_791`
-- Each call creates or updates a view for that user
-
-**Step 4: Verify Views in MongoDB**
-```javascript
-db.job.findOne({ job_id: "job_123456" }, { views: 1, view_count: 1 })
-```
-- Should show array of View objects with user_ids and view_dates
-- `view_count` should equal the number of views
-
-**Step 5: Fetch Job and Confirm Privacy**
-- Run Test Case 1 to fetch the job
-- **Important**: Response should NOT include the `views` array
-- Response should only show `view_count` (computed field)
-- This ensures user privacy - no one can see who viewed the job
-
-**Step 6: Filter Jobs by Criteria**
-- Run Test Case 2 with various filter combinations
-- Test each filter parameter independently
-- Test AND/OR operators with multiple conditions
-
-#### Postman Response Validation
-
-**Expected fetch_job_listings Response:**
-```json
-[
-  {
-    "job_id": "job_123456",
-    "title": "Senior Full Stack Developer",
-    "company": "Tech Innovations Inc",
-    "location": "San Francisco, CA",
-    "job_type": "Full Time",
-    "connection_type": "Hybrid",
-    "salary_range": { "min": 120000, "max": 180000, "currency": "USD" },
-    "posted_date": "2026-01-15T10:00:00Z",
-    "skills": ["Python", "FastAPI", "React", "MongoDB"],
-    "source": "company_website",
-    "created_at": "2026-01-15T10:00:00Z",
-    "updated_at": "2026-01-15T10:00:00Z",
-    "view_count": 3
-  }
-]
-```
-**Note**: No `views` array in response (privacy protection)
-
-**Expected create_job_view Response:**
-```json
-{
-  "job_id": "job_123456",
-  "user_id": "user_789",
-  "view_date": "2026-01-16T14:30:00.123456+00:00",
-  "action": "created",
-  "total_job_views": 1
-}
-```
-
-**Example fetch_job_listings request:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "fetch_job_listings",
-    "arguments": {
-      "filter": {
-        "company": "Tech Innovations Inc",
-        "location": "Remote",
-        "job_type": "Full Time",
-        "skills": ["Python", "FastAPI"]
-      }
-    }
-  }
-}
-```
-
-**Example create_job_view request:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "create_job_view",
-    "arguments": {
-      "job_id": "job_123456",
-      "user_id": "user_789"
-    }
-  }
-}
-```
 
 ## Configuration
 
@@ -614,6 +342,21 @@ If breakpoints aren't hitting:
 2. Ensure `justMyCode: false` is set
 3. Check PYTHONPATH includes both library and service directories
 4. Restart the Python interpreter
+
+## Known Issues
+
+### Dynamic Resource Discovery in Postman
+
+Dynamic (template) resources using `uriTemplate` (e.g., `jobs://details/{job_id}`) are not directly loaded or discoverable in Postman. This is a limitation of how Postman interprets MCP resource lists and templates.
+
+![Dynamic Resource Issue in Postman](docs/JMR-%20Resourse%20issue%20PM.png)
+
+However, dynamic resources are correctly loaded and visible in the official Cline MCP client:
+
+![Cline Detecting dynamic resources](docs/Cline%20Detecting%20dynamic%20resources.png)
+
+Resource calls for dynamic URIs will be fully tested after agent-core integration with the MCP client. Until then, only direct resources (static URIs) are reliably testable in Postman.
+
 
 ## License
 
